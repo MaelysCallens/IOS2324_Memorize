@@ -10,10 +10,10 @@ import SwiftUI
 struct ContentView: View {
     var body: some View {
         HStack {
+            CardView(isFaceUp: false)
+            CardView()
             CardView(isFaceUp: true)
-            CardView()
-            CardView()
-            CardView()
+            CardView(isFaceUp: true)
         }
         .foregroundColor(Color.red)
         .padding()
@@ -21,19 +21,21 @@ struct ContentView: View {
 }
 
 struct CardView: View {
-    var isFaceUp: Bool = false
+    @State var isFaceUp = false //om na te gaan of kaart omgedraaid is ofniet
     
     var body: some View {
-        ZStack(content: { //Vstack: up and down, Zstack: erop en erboven
+        ZStack { //Vstack: up and down, Zstack: erop en erboven
+            let base = RoundedRectangle(cornerRadius: 12) //let = constante
             if isFaceUp {
-                RoundedRectangle(cornerRadius: 12)
-                    .foregroundColor(.white)
-                RoundedRectangle(cornerRadius: 12)
-                    .strokeBorder(lineWidth: 2)
-                Text("🧛🏾‍♀️").font(.largeTitle)
+                base.foregroundColor(.white)
+                base.strokeBorder(lineWidth: 2)
+                Text("🎃").font(.largeTitle)
             } else {
-                RoundedRectangle(cornerRadius: 12)
+                base.fill()
             }
+        }
+        .onTapGesture(perform: {
+            isFaceUp.toggle() //functie om false om te zetten naar true en omgekeerd
         })
     }
 }
