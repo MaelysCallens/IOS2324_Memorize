@@ -8,60 +8,54 @@
 import SwiftUI
 
 struct EmojiMemoryGameView: View {
+    typealias Card = MemoryGame<String>.Card
     @ObservedObject var viewModel: EmojiMemoryGame
     
-    let emojis = ["🧛🏾‍♀️", "🎃", "👻", "🕷️", "🐝", "🚘", "🥞", "🍷", "⏰", "🧚‍♀️", "🧟‍♀️", "🧜‍♀️"]
+    private let aspectRatio: CGFloat = 2/3
+    private let spacing: CGFloat = 4
     
     var body: some View {
         VStack{
-            ScrollView {
-                cards
-                    .animation(.default,value: viewModel.cards)
+            cards
+                .foregroundColor(viewModel.color)
+            HStack {
+                score
+                Spacer()
+                shuffle
             }
-            Button("Shuffle") {
-                viewModel.shuffle()
-            }
+            .font(.largeTitle)
         }
         .padding()
     }
     
-    var cards: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 85), spacing: 0)], spacing: 0) {
-            ForEach(viewModel.cards) { card in
-                    CardView(card)
-                        .aspectRatio(2/3, contentMode: .fit)
-                        .padding(4)
-                        .onTapGesture {
-                            viewModel.choose(card)
-                        }
-            }
-        }
-        .foregroundColor(Color.red)
-    }
-}
-
-struct CardView: View {
-    let card: MemoryGame<String>.Card
-    
-    init(_ card: MemoryGame<String>.Card) {
-        self.card = card
+    private var score: some View {
+        Text("Score: \(viewModel.score)")
+            .animation(nil)
     }
     
-    var body: some View {
-        ZStack { //Vstack: up and down, Zstack: erop en erboven
-            let base = RoundedRectangle(cornerRadius: 12) //let = constante
-            Group  {
-                base.foregroundColor(.white)
-                base.strokeBorder(lineWidth: 2)
-                Text(card.content)
-                    .font(.system(size: 200))
-                    .minimumScaleFactor(0.01)
-                    .aspectRatio(1, contentMode: .fit)
+    private var shuffle: some View {
+        Button("Shuffle") {
+            withAnimation {
+                viewModel.shuffle()
             }
-            .opacity(card.isFaceUp ? 1 : 0)
-            base.fill().opacity(card.isFaceUp ? 0 : 1)
         }
-        .opacity(card.isFaceUp || !card.isMatched ? 1 : 0)
+    }
+    
+    private var cards: some View {
+        AspectVGrid(viewModel.cards, aspectRatio: aspectRatio) { card in
+            CardView(card)
+                .padding(spacing)
+                .overlay(FlyingNumber(number: scoreChange(causedBy: card)))
+                .onTapGesture {
+                    withAnimation {
+                        viewModel.choose(card)
+                    }
+                }
+        }
+    }
+    
+    private func scoreChange(causedBy card: Card) -> Int {
+        return 0
     }
 }
 
